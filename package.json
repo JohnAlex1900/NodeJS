@@ -1,0 +1,22 @@
+{
+  "name": "nodejs",
+  "version": "1.0.0",
+  "description": "Backend NodeJS Code",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JohnAlex1900/NodeJS.git"
+  },
+  "author": "John Irungu",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JohnAlex1900/NodeJS/issues"
+  },
+  "homepage": "https://github.com/JohnAlex1900/NodeJS#readme",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
