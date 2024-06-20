@@ -1,0 +1,32 @@
+{
+  "name": "blog_backend",
+  "version": "1.0.0",
+  "description": "Backend Code for Blog Project",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon index.js",
+    "test": "node --test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JohnAlex1900/NodeJS.git"
+  },
+  "author": "John Irungu",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JohnAlex1900/NodeJS/issues"
+  },
+  "homepage": "https://github.com/JohnAlex1900/NodeJS#readme",
+  "dependencies": {
+    "axios": "^1.7.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "lodash": "^4.17.21",
+    "mongodb": "^6.7.0",
+    "mongoose": "^8.4.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.3"
+  }
+}
