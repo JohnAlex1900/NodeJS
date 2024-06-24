@@ -1,5 +1,3 @@
-const { test, describe, beforeEach, after } = require("node:test");
-const assert = require("node:assert");
 const supertest = require("supertest");
 const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
@@ -37,11 +35,11 @@ describe("when there is initially one user in db", () => {
       .expect("Content-Type", /application\/json/);
 
     const usersAtEnd = await helper.usersInDb();
-    assert.strictEqual(usersAtEnd.length, usersAtStart.length + 1);
+    expect(usersAtEnd).toHaveLength(usersAtStart.length + 1);
 
     const usernames = usersAtEnd.map((u) => u.username);
-    assert(usernames.includes(newUser.username));
-  });
+    expect(usernames).toContain(newUser.username);
+  }, 10000);
 
   test("creation fails with proper status code and message if username already taken", async () => {
     const usersAtStart = await helper.usersInDb();
@@ -58,11 +56,11 @@ describe("when there is initially one user in db", () => {
       .expect(400)
       .expect("Content-Type", /application\/json/);
 
-    assert(result.body.error.includes("expected `username` to be unique"));
+    expect(result.body.error).toBe("expected `username` to be unique");
 
     const usersAtEnd = await helper.usersInDb();
-    assert.strictEqual(usersAtEnd.length, usersAtStart.length);
-  });
+    expect(usersAtEnd).toHaveLength(usersAtStart.length);
+  }, 10000);
 
   test("creation fails with proper status code and message if username is too short", async () => {
     const usersAtStart = await helper.usersInDb();
@@ -79,15 +77,13 @@ describe("when there is initially one user in db", () => {
       .expect(400)
       .expect("Content-Type", /application\/json/);
 
-    assert(
-      result.body.error.includes(
-        "username and password must be at least 3 characters long"
-      )
+    expect(result.body.error).toBe(
+      "username and password must be at least 3 characters long"
     );
 
     const usersAtEnd = await helper.usersInDb();
-    assert.strictEqual(usersAtEnd.length, usersAtStart.length);
-  });
+    expect(usersAtEnd).toHaveLength(usersAtStart.length);
+  }, 10000);
 
   test("creation fails with proper status code and message if password is too short", async () => {
     const usersAtStart = await helper.usersInDb();
@@ -104,15 +100,13 @@ describe("when there is initially one user in db", () => {
       .expect(400)
       .expect("Content-Type", /application\/json/);
 
-    assert(
-      result.body.error.includes(
-        "username and password must be at least 3 characters long"
-      )
+    expect(result.body.error).toBe(
+      "username and password must be at least 3 characters long"
     );
 
     const usersAtEnd = await helper.usersInDb();
-    assert.strictEqual(usersAtEnd.length, usersAtStart.length);
-  });
+    expect(usersAtEnd).toHaveLength(usersAtStart.length);
+  }, 10000);
 
   test("creation fails with proper status code and message if username or password is missing", async () => {
     const usersAtStart = await helper.usersInDb();
@@ -127,11 +121,11 @@ describe("when there is initially one user in db", () => {
       .expect(400)
       .expect("Content-Type", /application\/json/);
 
-    assert(result.body.error.includes("username and password are required"));
+    expect(result.body.error).toContain("username and password are required");
 
     const usersAtEnd = await helper.usersInDb();
-    assert.strictEqual(usersAtEnd.length, usersAtStart.length);
-  });
+    expect(usersAtEnd).toHaveLength(usersAtStart.length);
+  }, 10000);
 
   test("succeeds with valid token and correct user", async () => {
     const newBlog = {
@@ -161,8 +155,8 @@ describe("when there is initially one user in db", () => {
       .expect(204);
 
     const blogsAtEnd = await helper.blogsInDb();
-    assert.strictEqual(blogsAtEnd.length, 0);
-  });
+    expect(blogsAtEnd).toHaveLength(0);
+  }, 10000);
 
   test("fails with 401 if token is missing", async () => {
     const newBlog = {
@@ -187,9 +181,9 @@ describe("when there is initially one user in db", () => {
     const blogId = savedBlog.body.id;
 
     await api.delete(`/api/blogs/${blogId}`).expect(401);
-  });
+  }, 10000);
 });
 
-after(() => {
+afterAll(() => {
   mongoose.connection.close();
 });
