@@ -41,4 +41,21 @@ usersRouter.get("/", async (request, response) => {
   response.json(users);
 });
 
+// GET user details by ID
+usersRouter.get("/:userId", async (req, res) => {
+  const userId = req.params.userId;
+  try {
+    // Fetch user details from database or other source
+    const user = await User.findById(userId).populate("blogs");
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    // Respond with user details including blogs
+    res.json(user);
+  } catch (error) {
+    console.error("Error fetching user:", error.message);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 module.exports = usersRouter;

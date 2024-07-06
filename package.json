@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "test:list_helper": "jest --testPathPattern=tests/list_helper.test.js",
     "test:user_api": "jest --testPathPattern=tests/user_api.test.js",
-    "test:blog_api": "jest --testPathPattern=tests/blog_api.test.js"
+    "test:blog_api": "jest --testPathPattern=tests/blog_api.test.js",
+    "start:test": "NODE_ENV=test nodemon index.js"
   },
   "repository": {
     "type": "git",

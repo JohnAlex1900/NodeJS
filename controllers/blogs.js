@@ -1,16 +1,17 @@
 const blogsRouter = require("express").Router();
 const Blog = require("../models/blog");
-const User = require("../models/user");
-const jwt = require("jsonwebtoken");
 const { userExtractor } = require("../utils/middleware");
+const jwt = require("jsonwebtoken");
 
 // Get all blogs
 blogsRouter.get("/", async (request, response) => {
   try {
-    const blogs = await Blog.find({}).populate("user", {
-      username: 1,
-      name: 1,
-    });
+    const blogs = await Blog.find({})
+      .populate("user", {
+        username: 1,
+        name: 1,
+      })
+      .populate("comments");
     response.json(blogs);
   } catch (error) {
     response.status(500).json({ error: "Failed to fetch blogs" });
@@ -19,16 +20,23 @@ blogsRouter.get("/", async (request, response) => {
 
 // Get a specific blog by ID
 blogsRouter.get("/:id", async (request, response) => {
-  const blog = await Blog.findById(request.params.id);
-  if (blog) {
-    response.json(blog);
-  } else {
-    response.status(404).json({ error: "Blog not found" });
+  try {
+    const blog = await Blog.findById(request.params.id).populate("user", {
+      username: 1,
+      name: 1,
+    });
+    if (blog) {
+      response.json(blog);
+    } else {
+      response.status(404).json({ error: "Blog not found" });
+    }
+  } catch (error) {
+    response.status(400).json({ error: "Invalid blog ID" });
   }
 });
 
 // Post a new blog
-blogsRouter.post("/", async (request, response, next) => {
+blogsRouter.post("/", userExtractor, async (request, response, next) => {
   try {
     const body = request.body;
     if (!request.user) {
@@ -40,7 +48,7 @@ blogsRouter.post("/", async (request, response, next) => {
       title: body.title,
       author: body.author,
       url: body.url,
-      likes: body.likes || 0, // Default to 0 if not provided
+      likes: body.likes || 0,
       user: user.id,
     });
 
@@ -54,7 +62,7 @@ blogsRouter.post("/", async (request, response, next) => {
 });
 
 // Delete a specific blog by ID
-blogsRouter.delete("/:id", async (request, response) => {
+blogsRouter.delete("/:id", userExtractor, async (request, response) => {
   const blogId = request.params.id;
   const user = request.user;
 
@@ -63,40 +71,57 @@ blogsRouter.delete("/:id", async (request, response) => {
     return response.status(404).json({ error: "Blog not found" });
   }
 
-  // Check if the user making the request is the same as the creator of the blog
   if (blog.user.toString() !== user._id.toString()) {
     return response
       .status(403)
       .json({ error: "Unauthorized to delete this blog" });
   }
 
-  // Delete the blog
   await Blog.findByIdAndDelete(blogId);
   response.status(204).end();
 });
 
 blogsRouter.put("/:id", userExtractor, async (request, response, next) => {
-  const body = request.body;
-  const user = request.user;
-
-  const blog = {
-    likes: body.likes,
-  };
+  const { likes } = request.body;
 
   try {
-    const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, blog, {
-      new: true,
-      runValidators: true,
-      context: "query",
-    });
+    const updatedBlog = await Blog.findByIdAndUpdate(
+      request.params.id,
+      { likes },
+      { new: true, runValidators: true, context: "query" }
+    ).populate("user", { username: 1, name: 1 });
 
     if (!updatedBlog) {
       return response.status(404).end();
     }
 
-    response.json(updatedBlog.toJSON());
+    response.json(updatedBlog);
   } catch (error) {
     next(error);
+  }
+});
+
+// Comments Section
+blogsRouter.post("/:id/comments", userExtractor, async (request, response) => {
+  try {
+    const { id } = request.params;
+    const { comment } = request.body;
+
+    if (!comment) {
+      return response.status(400).json({ error: "Comment content missing" });
+    }
+
+    const blog = await Blog.findById(id);
+    if (!blog) {
+      return response.status(404).json({ error: "Blog not found" });
+    }
+
+    blog.comments = blog.comments.concat(comment);
+    const updatedBlog = await blog.save();
+
+    response.json(updatedBlog);
+  } catch (error) {
+    response.status(400).json({ error: "Invalid blog ID" });
   }
 });
 
